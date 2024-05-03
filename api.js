@@ -7,7 +7,7 @@ let timer = null;
 
 app.get('/start-pod', (req, res) => {
     const podName = process.env.OLLAMA_POD_NAME;;
-    const cmd = `/usr/local/bin/runpodctl start pod ${podName}`;
+    const cmd = `sudo /usr/local/bin/runpodctl start pod ${podName}`;
     
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
@@ -19,7 +19,7 @@ app.get('/start-pod', (req, res) => {
         // Set timer to automatically stop the pod after 10 minutes
         clearTimeout(timer);
         timer = setTimeout(() => {
-            const stopCmd = `/usr/local/bin/runpodctl stop pod ${podName}`;
+            const stopCmd = `sudo /usr/local/bin/runpodctl stop pod ${podName}`;
             exec(stopCmd);
         }, 600000); // 600000 milliseconds = 10 minutes
     });
