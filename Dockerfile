@@ -18,6 +18,7 @@ RUN wget -qO- cli.runpod.net |  bash
 # Create API endpoint
 COPY entrypoint.sh /app/backend/entrypoint.sh
 EXPOSE 8081
+RUN mkdir /root/.runpod
 RUN runpodctl config --apiKey test
 
 CMD [ "bash", "entrypoint.sh" ]
