@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 ## Configure runpodctl
 
 runpodctl config --apiKey $API_KEY
