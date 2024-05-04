@@ -5,4 +5,6 @@
 # Download the right llm Model
 
 /bin/ollama serve &
-/bin/ollama pull $LLM
+sleep 5
+/bin/ollama pull $LLM_MODEL
+sleep infinity
