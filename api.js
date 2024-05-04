@@ -5,25 +5,6 @@ const port = 8081;
 
 let timer = null;
 
-function checkPodExistsAndProceed() {
-    const checkCmd = `sudo /usr/local/bin/runpodctl get pod | awk '/ollama-node/ {print $1; exit}'`;
-
-    exec(checkCmd, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error checking pod: ${stderr}`);
-            setTimeout(checkPodExistsAndProceed, 5000); // Warte 5 Sekunden vor dem nächsten Versuch
-        } else if (!stdout.trim()) {
-            console.log('Pod not found, checking again in 5 seconds...');
-            setTimeout(checkPodExistsAndProceed, 5000); // Warte 5 Sekunden vor dem nächsten Versuch
-        } else {
-            console.log('Pod found:', stdout.trim());
-            // Führe hier weitere Aktionen aus, nachdem der Pod gefunden wurde
-            // Beispielaktion: Nachricht senden, dass Pod bereit ist
-            // Dies ist nur ein Platzhalter für weitere Logik
-        }
-    });
-}
-
 app.get('/start-pod', (req, res) => {
     const podName = process.env.OLLAMA_POD_NAME;
     const cmd = `sudo /usr/local/bin/runpodctl start pod ${podName}`;
@@ -59,43 +40,106 @@ app.get('/stop-pod', (req, res) => {
     });
 });
 
+// Hilfsfunktion, um den Pod-Status zu überprüfen
+function checkPodIsReady(podName, callback) {
+    const checkCmd = `sudo /usr/local/bin/runpodctl get pod | awk '/${podName}/ {print $7; exit}'`; // Angenommen, $3 gibt den Status zurück
+    exec(checkCmd, (error, stdout, stderr) => {
+        if (error || stderr) {
+            console.error(`Error checking pod status: ${stderr}`);
+            return setTimeout(() => checkPodIsReady(podName, callback), 1000); // Wiederholen nach 1 Sekunde
+        }
+        if (stdout.trim() === 'RUNNING') { // Annahme: 'Running' ist der Status eines einsatzbereiten Pods
+            callback();
+        } else {
+            setTimeout(() => checkPodIsReady(podName, callback), 1000); // Wiederholen, bis der Status 'Running' ist
+        }
+    });
+}
+
 app.get('/install-pod', (req, res) => {
-    const installCmd = `sudo /usr/local/bin/runpodctl create pod --name "ollama-node" --communityCloud --gpuCount 1 --gpuType "NVIDIA GeForce RTX 3090" --containerDiskSize 20 --imageName "casraw/ollama-runpod" --volumeSize 100 --volumePath "/root/.ollama" --env LLM_MODEL=llama3 --ports "11434/http"`; 
+    const installCmd = `sudo /usr/local/bin/runpodctl create pod --name "ollama-node" --communityCloud --gpuCount 1 --gpuType "NVIDIA GeForce RTX 3090" --containerDiskSize 20 --imageName "casraw/ollama-runpod" --volumeSize 100 --volumePath "/root/.ollama" --env LLM_MODEL=llama3 --ports "11434/http"`;
+
     exec(installCmd, (installError, installStdout, installStderr) => {
         if (installError) {
             console.error(`Error: ${installStderr}`);
             return res.status(500).send(`Error installing pod: ${installStderr}`);
         }
 
-        checkPodExistsAndProceed(); // Starte die Überprüfung, sobald der Server läuft
-
-
-        const getPodIdCmd = `sudo /usr/local/bin/runpodctl get pod | awk '/ollama-node/ {print $1; exit}'`;
-        exec(getPodIdCmd, (getPodIdError, ollamaPodId, getPodIdStderr) => {
-            if (getPodIdError) {
-                console.error(`Get Pod ID error: ${getPodIdStderr}`);
-                return res.status(500).send(`Error retrieving ollama-node pod ID: ${getPodIdStderr}`);
-            }
-            const podId = ollamaPodId.trim();
-            
-            const getIdCmd = `sudo /usr/local/bin/runpodctl get pod | awk '/open-webui/ {print $1; exit}'`;
-            exec(getIdCmd, (getIdError, webuiPodId, getIdStderr) => {
-                if (getIdError) {
-                    console.error(`Get ID error: ${getIdStderr}`);
-                    return res.status(500).send(`Error retrieving pod ID: ${getIdStderr}`);
+        // Warten, bis der Pod betriebsbereit ist
+        checkPodIsReady('ollama-node', () => {
+            const getPodIdCmd = `sudo /usr/local/bin/runpodctl get pod | awk '/ollama-node/ {print $1; exit}'`;
+            exec(getPodIdCmd, (getPodIdError, ollamaPodId, getPodIdStderr) => {
+                if (getPodIdError) {
+                    console.error(`Get Pod ID error: ${getPodIdStderr}`);
+                    return res.status(500).send(`Error retrieving ollama-node pod ID: ${getPodIdStderr}`);
                 }
-                const apiKey = process.env.API_KEY;
-                const curlCmd = `curl --request POST \
-                    --header 'content-type: application/json' \
-                    --url 'https://api.runpod.io/graphql?api_key=${apiKey}' \
-                    --data '{"query": "mutation { podEditJob(input: { podId: "${webuiPodId.trim()}", containerDiskInGb: 5, dockerArgs: \"\", env: [ { key: \"OLLAMA_BASE_URL\", value: \"https://${podId}-11434.proxy.runpod.net\" }, { key: \"API_KEY\", value: \"${apiKey}\" }, { key: \"OLLAMA_POD_NAME\", value: \"${podId}\" } ], imageName: \"casraw/open-webui-runpod-integration:latest\", ports: \"8080/http,8081/http\", volumeInGb: 0, volumeMountPath: \"/app/backend/data\" }) { containerDiskInGb costPerHr desiredStatus dockerArgs env gpuCount id imageName lastStatusChange locked machineId memoryInGb name networkVolume { dataCenterId id name size } podType ports templateId uptimeSeconds vcpuCount volumeInGb volumeMountPath } }"'`;
+                const podId = ollamaPodId.trim();
 
-                exec(curlCmd, (curlError, curlStdout, curlStderr) => {
-                    if (curlError) {
-                        console.error(`Curl error: ${curlStderr}`);
-                        return res.status(500).send(`Error during API call: ${curlStderr}`);
+                const getIdCmd = `sudo /usr/local/bin/runpodctl get pod | awk '/open-webui/ {print $1; exit}'`;
+                exec(getIdCmd, (getIdError, webuiPodId, getIdStderr) => {
+                    if (getIdError) {
+                        console.error(`Get ID error: ${getIdStderr}`);
+                        return res.status(500).send(`Error retrieving pod ID: ${getIdStderr}`);
                     }
-                    res.send('Pod installed and configured successfully!');
+
+                    const apiKey = process.env.API_KEY;
+                    // const curlCmd = `curl --output /tmp/curl.log --request POST --header 'content-type: application/json' --url 'https://api.runpod.io/graphql?api_key=${apiKey}' --data '{"query": "mutation { podEditJob(input: { podId: "${webuiPodId.trim()}", containerDiskInGb: 5, dockerArgs: \"\", env: [ { key: \"OLLAMA_BASE_URL\", value: \"https://${podId}-11434.proxy.runpod.net\" }, { key: \"API_KEY\", value: \"{{ RUNPOD_SECRET_runpod-api }}\" }, { key: \"OLLAMA_POD_NAME\", value: \"${podId}\" } ], imageName: \"casraw/open-webui-runpod-integration:latest\", ports: \"8080/http,8081/http\", volumeInGb: 0, volumeMountPath: \"/app/backend/data\" }) { containerDiskInGb costPerHr desiredStatus dockerArgs env gpuCount id imageName lastStatusChange locked machineId memoryInGb name networkVolume { dataCenterId id name size } podType ports templateId uptimeSeconds vcpuCount volumeInGb volumeMountPath } }"'`;
+                    const data = {
+                        query: `mutation {
+                          podEditJob(input: {
+                            podId: "${webuiPodId.trim()}",
+                            containerDiskInGb: 5,
+                            dockerArgs: "",
+                            env: [
+                              { key: "OLLAMA_BASE_URL", value: "https://${podId}-11434.proxy.runpod.net" },
+                              { key: "API_KEY", value: "{{ RUNPOD_SECRET_runpod-api }}" },
+                              { key: "OLLAMA_POD_NAME", value: "${podId}" }
+                            ],
+                            imageName: "casraw/open-webui-runpod-integration:latest",
+                            ports: "8080/http,8081/http",
+                            volumeInGb: 0,
+                            volumeMountPath: "/app/backend/data"
+                          }) {
+                            containerDiskInGb
+                            costPerHr
+                            desiredStatus
+                            dockerArgs
+                            env
+                            gpuCount
+                            id
+                            imageName
+                            lastStatusChange
+                            locked
+                            machineId
+                            memoryInGb
+                            name
+                            networkVolume {
+                              dataCenterId
+                              id
+                              name
+                              size
+                            }
+                            podType
+                            ports
+                            templateId
+                            uptimeSeconds
+                            vcpuCount
+                            volumeInGb
+                            volumeMountPath
+                          }
+                        }`
+                      };
+
+                      fetch(`https://api.runpod.io/graphql?api_key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                      })
+                      .then(response => response.json())
+                      .then(data => console.log(data))
+                      .catch(error => console.error('Error:', error));
                 });
             });
         });
