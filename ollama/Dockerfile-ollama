@@ -5,3 +5,7 @@ RUN apt-get update ; apt-get install python3.11 -y openssh-server
 ## Environment variables for binding to evything
 
 ENV OLLAMA_HOST=0.0.0.0
+COPY entrypoint.sh /entrypoint.sh
+
+CMD [""]
+ENTRYPOINT ["/entrypoint.sh"]
