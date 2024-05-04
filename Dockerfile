@@ -5,6 +5,7 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install dependencies and upgrade
 RUN apt-get update && apt-get upgrade -y && apt-get install -y curl wget gnupg2 procps ca-certificates nginx git python3 sudo procps
+RUN pip install --upgrade pip
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - &&\
 apt-get install -y nodejs
