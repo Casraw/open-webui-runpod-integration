@@ -46,6 +46,9 @@ Make sure to replace `<Your_API_Key>`, `<Your_Ollama_Base_URL>`, and `<Your_Olla
 
 For those looking to deploy directly on RunPod.io, a template is available which simplifies the process of setting up and running this Docker container in the RunPod environment. This template includes pre-configured settings optimized for use with RunPod services.
 
+Direct deployment template link:
+- **RunPod.io Template**: [Deploy on RunPod](https://www.runpod.io/console/explore/cixh50m096)
+
 ## Volume Mounts
 
 It is recommended to use the standard volume mount to preserve user data:
@@ -55,6 +58,7 @@ It is recommended to use the standard volume mount to preserve user data:
 
 - **DockerHub**: [casraw/open-webui-runpod-integration](https://hub.docker.com/r/casraw/open-webui-runpod-integration)
 - **GitHub**: [Casraw/open-webui-runpod-integration](https://github.com/Casraw/open-webui-runpod-integration)
+- **RunPod.io Template**: [Deploy on RunPod](https://www.runpod.io/console/explore/cixh50m096)
 
 ## Contributing
 
