@@ -57,7 +57,9 @@ function checkPodIsReady(podName, callback) {
 }
 
 app.get('/install-pod', (req, res) => {
-    const installCmd = `sudo /usr/local/bin/runpodctl create pod --name "ollama-node" --communityCloud --gpuCount 1 --gpuType "NVIDIA GeForce RTX 3090" --containerDiskSize 20 --imageName "casraw/ollama-runpod" --volumeSize 100 --volumePath "/root/.ollama" --env LLM_MODEL=llama3 --ports "11434/http"`;
+    const gpuCount = process.env.GPU_COUNT;
+    const llm = process.env.LLM;
+    const installCmd = `sudo /usr/local/bin/runpodctl create pod --name "ollama-node" --communityCloud --gpuCount ${gpuCount} --gpuType "NVIDIA GeForce RTX 3090" --containerDiskSize 20 --imageName "casraw/ollama-runpod" --volumeSize 100 --volumePath "/root/.ollama" --env LLM_MODEL=${llm} --ports "11434/http"`;
 
     exec(installCmd, (installError, installStdout, installStderr) => {
         if (installError) {
@@ -92,7 +94,9 @@ app.get('/install-pod', (req, res) => {
                             env: [
                               { key: "OLLAMA_BASE_URL", value: "https://${podId}-11434.proxy.runpod.net" },
                               { key: "API_KEY", value: "{{ RUNPOD_SECRET_runpod-api }}" },
-                              { key: "OLLAMA_POD_NAME", value: "${podId}" }
+                              { key: "OLLAMA_POD_NAME", value: "${podId}" },
+                              { key: "LLM", value: "{{ RUNPOD_SECRET_llm }}" },
+                              { key: "GPU_COUNT", value: "{{ RUNPOD_SECRET_gpucount }}" }
                             ],
                             imageName: "casraw/open-webui-runpod-integration:latest",
                             ports: "8080/http,8081/http",
