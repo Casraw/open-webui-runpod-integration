@@ -1,7 +1,5 @@
 FROM ollama/ollama:latest
 
-RUN apt-get update ; apt-get install python3.11 -y openssh-server
-
 ## Environment variables for binding to evything
 
 ENV OLLAMA_HOST=0.0.0.0
