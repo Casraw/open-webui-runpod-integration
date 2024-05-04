@@ -83,7 +83,6 @@ app.get('/install-pod', (req, res) => {
                     }
 
                     const apiKey = process.env.API_KEY;
-                    // const curlCmd = `curl --output /tmp/curl.log --request POST --header 'content-type: application/json' --url 'https://api.runpod.io/graphql?api_key=${apiKey}' --data '{"query": "mutation { podEditJob(input: { podId: "${webuiPodId.trim()}", containerDiskInGb: 5, dockerArgs: \"\", env: [ { key: \"OLLAMA_BASE_URL\", value: \"https://${podId}-11434.proxy.runpod.net\" }, { key: \"API_KEY\", value: \"{{ RUNPOD_SECRET_runpod-api }}\" }, { key: \"OLLAMA_POD_NAME\", value: \"${podId}\" } ], imageName: \"casraw/open-webui-runpod-integration:latest\", ports: \"8080/http,8081/http\", volumeInGb: 0, volumeMountPath: \"/app/backend/data\" }) { containerDiskInGb costPerHr desiredStatus dockerArgs env gpuCount id imageName lastStatusChange locked machineId memoryInGb name networkVolume { dataCenterId id name size } podType ports templateId uptimeSeconds vcpuCount volumeInGb volumeMountPath } }"'`;
                     const data = {
                         query: `mutation {
                           podEditJob(input: {
