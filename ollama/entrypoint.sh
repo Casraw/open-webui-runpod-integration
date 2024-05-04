@@ -4,6 +4,5 @@
 
 # Download the right llm Model
 
+/bin/ollama serve &
 /bin/ollama pull $LLM
-
-/vin/ollama serve
