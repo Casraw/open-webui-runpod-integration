@@ -5,6 +5,25 @@ const port = 8081;
 
 let timer = null;
 
+function checkPodExistsAndProceed() {
+    const checkCmd = `sudo /usr/local/bin/runpodctl get pod | awk '/ollama-node/ {print $1; exit}'`;
+
+    exec(checkCmd, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error checking pod: ${stderr}`);
+            setTimeout(checkPodExistsAndProceed, 5000); // Warte 5 Sekunden vor dem nächsten Versuch
+        } else if (!stdout.trim()) {
+            console.log('Pod not found, checking again in 5 seconds...');
+            setTimeout(checkPodExistsAndProceed, 5000); // Warte 5 Sekunden vor dem nächsten Versuch
+        } else {
+            console.log('Pod found:', stdout.trim());
+            // Führe hier weitere Aktionen aus, nachdem der Pod gefunden wurde
+            // Beispielaktion: Nachricht senden, dass Pod bereit ist
+            // Dies ist nur ein Platzhalter für weitere Logik
+        }
+    });
+}
+
 app.get('/start-pod', (req, res) => {
     const podName = process.env.OLLAMA_POD_NAME;
     const cmd = `sudo /usr/local/bin/runpodctl start pod ${podName}`;
@@ -47,6 +66,9 @@ app.get('/install-pod', (req, res) => {
             console.error(`Error: ${installStderr}`);
             return res.status(500).send(`Error installing pod: ${installStderr}`);
         }
+
+        checkPodExistsAndProceed(); // Starte die Überprüfung, sobald der Server läuft
+
 
         const getPodIdCmd = `sudo /usr/local/bin/runpodctl get pod | awk '/ollama-node/ {print $1; exit}'`;
         exec(getPodIdCmd, (getPodIdError, ollamaPodId, getPodIdStderr) => {
