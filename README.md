@@ -1,4 +1,4 @@
-# RunPod Ollama Control Server with open-webui frontend
+# RunPod Ollama Control Server
 
 ## Overview
 This server manages Ollama instances on RunPod.io and serves as the backend, while the OpenWeb-UI functions as the frontend interface. It is specifically optimized for use on RunPod and utilizes RunPod Secrets for configuration. The server endpoints offer comprehensive management capabilities for pods.
@@ -18,6 +18,10 @@ The server is exclusively designed for operation on RunPod.io and uses specific 
 - `API_KEY`: Read and Write API Key for RunPod (`{{ RUNPOD_SECRET_runpod-api }}`).
 - `LLM`: Determines which Language Model (LLM) will be used (`{{ RUNPOD_SECRET_llm }}`).
 - `GPU_COUNT`: Specifies the number of Nvidia RTX 3090 graphics cards to be used (`{{ RUNPOD_SECRET_gpucount }}`).
+
+### Network Storage
+
+The OpenWeb-UI requires network storage to ensure persistent data management across pod sessions. This storage should be configured to allow seamless data retrieval and updates by the OpenWeb-UI.
 
 ## RunPod Deployment
 
