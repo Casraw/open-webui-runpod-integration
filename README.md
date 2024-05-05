@@ -1,4 +1,4 @@
-# RunPod Ollama Control Server
+# RunPod Ollama Control Server with open-webui frontend
 
 ## Overview
 This server manages Ollama instances on RunPod.io and serves as the backend, while the OpenWeb-UI functions as the frontend interface. It is specifically optimized for use on RunPod and utilizes RunPod Secrets for configuration. The server endpoints offer comprehensive management capabilities for pods.
