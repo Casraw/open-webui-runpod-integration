@@ -1,72 +1,47 @@
 # RunPod Ollama Control Server
 
-This project is an Express web server that interfaces with the open-webui to manage Ollama instances on RunPod. It includes a set of RESTful API endpoints to start and stop Ollama pods dynamically, with additional functionalities and security features planned for future updates.
+## Overview
+This server manages Ollama instances on RunPod.io and serves as the backend, while the OpenWeb-UI functions as the frontend interface. It is specifically optimized for use on RunPod and utilizes RunPod Secrets for configuration. The server endpoints offer comprehensive management capabilities for pods.
 
 ## Features
 
-- **Start Pod**: Trigger the start of an Ollama instance via the `/start-pod` endpoint.
-- **Stop Pod**: Terminate an existing Ollama instance via the `/stop-pod` endpoint.
-- **Automatic Shutdown**: By default, the started Ollama pod will automatically shut down after 10 minutes. To prevent this, call the `/start-pod` endpoint again before the 10-minute mark.
+- **Install Pod**: Installs a pod, downloads the specified LLM, updates the settings of the main OpenWeb-UI Pod, and restarts it via the `/install-pod` endpoint.
+- **Kill Pod**: Completely removes the Ollama node via the `/kill-pod` endpoint.
+- **Start Pod**: Launches an Ollama instance via the `/start-pod` endpoint.
+- **Stop Pod**: Terminates an existing Ollama instance via the `/stop-pod` endpoint.
+- **Automatic Shutdown**: Ollama pods automatically shut down after 10 minutes by default. To prevent this, invoke the `/start-pod` endpoint again before the 10 minutes expire.
 
 ## Requirements
 
-This server is intended to run on a RunPod.io pod as a Docker container. The following environment variables are necessary:
+The server is exclusively designed for operation on RunPod.io and uses specific RunPod Secrets:
 
-- `API_KEY`: Read and write API key for RunPod.
-- `OLLAMA_BASE_URL`: Endpoint URL for the Ollama backend.
-- `OLLAMA_POD_NAME`: Currently requires the pod ID (not the name).
+- `API_KEY`: Read and Write API Key for RunPod (`{{ RUNPOD_SECRET_runpod-api }}`).
+- `LLM`: Determines which Language Model (LLM) will be used (`{{ RUNPOD_SECRET_llm }}`).
+- `GPU_COUNT`: Specifies the number of Nvidia RTX 3090 graphics cards to be used (`{{ RUNPOD_SECRET_gpucount }}`).
 
-## Docker Container
+## RunPod Deployment
 
-The server runs inside a Docker container. The Docker image is available on Docker Hub:
+- **Docker Compatibility**: This server operates as a Docker container on RunPod.io. It is specifically optimized for this platform, meaning that the API endpoints utilize specific functions of RunPod.io that are not available in other environments.
+- **RunPod Template**: For seamless integration and easy setup, use the specific template on RunPod.io. This template automatically configures all necessary settings and ensures that the container is correctly executed in the RunPod environment. [Deploy on RunPod](https://www.runpod.io/console/explore/cixh50m096)
 
-```
-casraw/open-webui-runpod-integration
-```
+## OpenWeb-UI
 
-### Pulling the Docker Image
-
-Pull the Docker image using:
-
-```bash
-docker pull casraw/open-webui-runpod-integration
-```
-
-### Running the Docker Container
-
-To run the container on your local machine or another environment, use:
-
-```bash
-docker run -p 8081:8081 -p 8080:8080 -e API_KEY=<Your_API_Key> -e OLLAMA_BASE_URL=<Your_Ollama_Base_URL> -e OLLAMA_POD_NAME=<Your_Ollama_Pod_ID> -v open-webui:/app/backend/data casraw/open-webui-runpod-integration
-```
-
-Make sure to replace `<Your_API_Key>`, `<Your_Ollama_Base_URL>`, and `<Your_Ollama_Pod_ID>` with your actual environment variable values. The volume mount `-v open-webui:/app/backend/data` is recommended to preserve user data.
-
-### RunPod Template
-
-For those looking to deploy directly on RunPod.io, a template is available which simplifies the process of setting up and running this Docker container in the RunPod environment. This template includes pre-configured settings optimized for use with RunPod services.
-
-Direct deployment template link:
-- **RunPod.io Template**: [Deploy on RunPod](https://www.runpod.io/console/explore/cixh50m096)
-
-## Volume Mounts
-
-It is recommended to use the standard volume mount to preserve user data:
-- Mount `open-webui:/app/backend/data`.
+- **Frontend Integration**: The OpenWeb-UI serves as the frontend for this backend system, providing a user-friendly interface for managing Ollama instances. It allows users to start, stop, and monitor the status of the pods.
 
 ## Links
 
-- **DockerHub**: [casraw/open-webui-runpod-integration](https://hub.docker.com/r/casraw/open-webui-runpod-integration)
 - **GitHub**: [Casraw/open-webui-runpod-integration](https://github.com/Casraw/open-webui-runpod-integration)
+- **DockerHub - Server Image**: [casraw/open-webui-runpod-integration](https://hub.docker.com/repository/docker/casraw/open-webui-runpod-integration/general)
+- **DockerHub - Ollama Image**: [casraw/ollama-runpod](https://hub.docker.com/repository/docker/casraw/ollama-runpod/general)
 - **RunPod.io Template**: [Deploy on RunPod](https://www.runpod.io/console/explore/cixh50m096)
 
 ## Contributing
 
-Interested in contributing? Great! You can start by registering on RunPod using this [referral link](https://runpod.io?ref=vtmhuzd2) to help support the project.
+- To contribute to development, please register using this [Referral Link](https://runpod.io?ref=vtmhuzd2) to RunPod and support the project.
 
 ## Future Plans
 
-- Implement authentication mechanisms.
-- Extend the API with more functionalities.
+- Expand server functionality with additional APIs and improved authentication mechanisms.
+- Integrate more features and tools in the OpenWeb-UI for better control and monitoring of Ollama instances.
 
-For any issues or contributions, please open an issue or submit a pull request.
+For further questions or contributions, please open an issue or submit a pull request.
