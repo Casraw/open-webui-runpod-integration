@@ -20,6 +20,6 @@ RUN wget -qO- cli.runpod.net |  bash
 COPY entrypoint.sh /app/backend/entrypoint.sh
 EXPOSE 8081
 RUN mkdir /root/.runpod &&  touch /root/.runpod/.runpod.yaml
-RUN runpodctl config --apiKey test
+RUN runpodctl config --apiKey test | echo "Needs to be fixed :-D"
 
 CMD [ "bash", "entrypoint.sh" ]
