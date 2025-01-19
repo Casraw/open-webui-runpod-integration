@@ -59,7 +59,7 @@ function checkPodIsReady(podName, callback) {
 app.get('/install-pod', (req, res) => {
     const gpuCount = process.env.GPU_COUNT;
     const llm = process.env.LLM;
-    const installCmd = `sudo /usr/local/bin/runpodctl create pod --name "ollama-node" --communityCloud --gpuCount ${gpuCount} --gpuType "NVIDIA GeForce RTX 3090" --containerDiskSize 20 --imageName "casraw/ollama-runpod" --volumeSize 100 --volumePath "/root/.ollama" --env LLM_MODEL=${llm} --ports "11434/http"`;
+    const installCmd = `sudo /usr/local/bin/runpodctl create pod --name "ollama-node" --communityCloud --gpuCount ${gpuCount} --gpuType "NVIDIA GeForce RTX 3090" --containerDiskSize 20 --imageName "casraw/ollama-runpod:main" --volumeSize 100 --volumePath "/root/.ollama" --env LLM_MODEL=${llm} --ports "11434/http"`;
 
     exec(installCmd, (installError, installStdout, installStderr) => {
         if (installError) {
