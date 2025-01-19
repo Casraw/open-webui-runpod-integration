@@ -17,7 +17,7 @@ permissions:
   contents: write
 
 env:
-  IMAGE_NAME: casraw/ollama-runpod
+  IMAGE_NAME: casraw/open-webui-runpod-integration
   SHA: ${{ github.sha }}
 
 concurrency:
@@ -65,12 +65,13 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           context: .
+          file: ./Dockerfile
           sbom: true
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=casraw/ollama-runpod:buildcache
-          cache-to: type=registry,ref=casraw/ollama-runpod:buildcache,mode=max
+          cache-from: type=registry,ref=casraw/open-webui-runpod-integration:buildcache
+          cache-to: type=registry,ref=casraw/open-webui-runpod-integration:buildcache,mode=max
           outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || 'type=registry,push=true' }}
           provenance: mode=max
       - name: Update Docker Hub description
@@ -78,5 +79,5 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PAT }}
-          repository: casraw/ollama-runpod
+          repository: casraw/open-webui-runpod-integration
           readme-filepath: ./README.md
